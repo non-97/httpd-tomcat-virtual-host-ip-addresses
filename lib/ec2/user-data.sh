@@ -18,19 +18,8 @@ dnf install -y "https://s3.${region_name}.amazonaws.com/amazon-ssm-${region_name
 systemctl enable amazon-ssm-agent
 systemctl start amazon-ssm-agent
 
-# Wait for eth1 to be found
-while true; do
-    if nmcli device show eth1 > /dev/null 2>&1; then
-        echo "Device 'eth1' found."
-        break
-    else
-        echo "Device 'eth1' not found. waiting 1 second"
-        sleep 1
-    fi
-done
-
 # List IP Address
-ip_addrs=($(nmcli device show eth1 \
+ip_addrs=($(nmcli device show eth0 \
   | grep IP4.ADDRESS \
   | awk -F "[:/]" '{print $2}' \
   | tr -d ' '))

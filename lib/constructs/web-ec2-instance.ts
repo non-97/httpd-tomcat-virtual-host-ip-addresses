@@ -57,20 +57,21 @@ export class WebEc2Instance extends Construct {
     });
 
     // ENI
-    const eni = new cdk.aws_ec2.CfnNetworkInterface(this, "Eni", {
-      subnetId: props.vpc.selectSubnets({
-        subnetGroupName: "Public",
-        onePerAz: true,
-      }).subnetIds[0],
-      secondaryPrivateIpAddressCount: 1,
-      groupSet: [this.instance.connections.securityGroups[0].securityGroupId],
-    });
-
-    new cdk.aws_ec2.CfnNetworkInterfaceAttachment(this, "AttachEni", {
-      instanceId: this.instance.instanceId,
-      deviceIndex: "1",
-      networkInterfaceId: eni.ref,
-    });
+    const cfnInstance = this.instance.node
+      .defaultChild as cdk.aws_ec2.CfnInstance;
+    cfnInstance.networkInterfaces = [
+      {
+        deviceIndex: "0",
+        subnetId: props.vpc.selectSubnets({
+          subnetGroupName: "Public",
+          onePerAz: true,
+        }).subnetIds[0],
+        secondaryPrivateIpAddressCount: 1,
+        groupSet: [this.instance.connections.securityGroups[0].securityGroupId],
+      },
+    ];
+    cfnInstance.addPropertyDeletionOverride("SecurityGroupIds");
+    cfnInstance.addPropertyDeletionOverride("SubnetId");
 
     // Output
     // Key pair
